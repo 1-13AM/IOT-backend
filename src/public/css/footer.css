@@ -1,0 +1,22 @@
+a {
+  color: #898989;
+  text-decoration: none;
+}
+a:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+li {
+  padding: 5px 0;
+}
+i{
+  cursor: pointer;
+}
+.thanhdo {
+  color: #898989;
+  margin: 0;
+  padding-top:10px;
+}
+
+/*# sourceMappingURL=footer.css.map */
