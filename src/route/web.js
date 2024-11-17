@@ -12,9 +12,10 @@ let initWebRoutes = (app) =>{
     router.get('/api/get-all-attendance-today',userController.getAllAttendanceToday)
     router.post('/api/create-attendance-and-history',userController.createTimeKeepingAndHistory);
     router.delete('/api/delete-attendance',userController.deleteAttendance);
-    router.get('/api/get-all-history',userController.getAllHistory)
-    router.get('/api/get-user-attendance-by-month',userController.getUserAttendanceByMonth)
-    router.get('/api/get-attendance-by-id-and-month',userController.getAttendanceByIdAndMonth)
+    router.get('/api/get-all-history',userController.getAllHistory);
+    router.get('/api/get-user-attendance-by-day',userController.getUserAttendanceByDay);
+    router.get('/api/get-user-attendance-by-month',userController.getUserAttendanceByMonth);
+    router.get('/api/get-attendance-by-id-and-month',userController.getAttendanceByIdAndMonth);
     return app.use("/",router);
 }
 module.exports = initWebRoutes;

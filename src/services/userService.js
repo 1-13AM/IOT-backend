@@ -24,7 +24,7 @@ let createUser = (data) => {
             if (check === true) {
                 resolve({
                     errCode: 1,
-                    errMessage: "Your's email is already been userd,Plz try another email!",
+                    errMessage: "Your's email is already been used,Plz try another email!",
                 })
             } else {
                 await db.User.create({
@@ -372,6 +372,71 @@ let getAllHistory = (data) => {
         }
     });
 }
+
+let getUserAttendanceByDay = (data) => {
+
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.date) {
+                return resolve({
+                    errCode: 1,
+                    errMessage: 'missing parameter'
+                });
+            }
+            // Validate and parse the date
+            let parsedDate = parseInt(data.date);
+            if (isNaN(parsedDate)) {
+                console.error('Invalid date parameter:', data.date);
+                return resolve({
+                    errCode: 1,
+                    errMessage: 'Invalid date parameter'
+                });
+            }
+            
+            const date = new Date(parseInt(data.date));
+            const startOfDay = new Date(date.setHours(0, 0, 0, 0)).getTime();
+            const endOfDay = new Date(date.setHours(23, 59, 59, 999)).getTime();
+
+            let attendanceCounts = await db.User.findAll({
+                attributes: [
+                    'id',
+                    'rfid',
+                    'fullName',
+                ],
+                include: [
+                    {
+                        model: db.Attendance,
+                        required: false,
+                        where: {
+                            timecheck: {
+                                [Op.between]: [startOfDay, endOfDay]
+                            }
+                        },
+                        attributes: ['timecheck', 'status']
+                    },
+                    { model: db.Allcode, as: 'genderData', attributes: ['valueV'] },
+                    { model: db.Allcode, as: 'positionData', attributes: ['valueV'] },
+                ],
+                raw: true
+            });
+
+            // Process attendance data
+            const processedData = attendanceCounts.map(user => ({
+                ...user,
+                totalAttendance: user['Attendances.status'] === 'D' ? 1 : 0,  // 1 if on time (D), 0 if late (M)
+                isPresent: !!user['Attendances.timecheck']  // true if they checked in at all
+            }));
+
+            resolve({
+                errCode: 0,
+                data: processedData
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 let getUserAttendanceByMonth = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -381,6 +446,16 @@ let getUserAttendanceByMonth = (data) => {
                     errMessage: 'missing parameter'
                 });
             }
+
+            let parsedDate = parseInt(data.month);
+            if (isNaN(parsedDate)) {
+                console.error('Invalid date parameter:', data.date);
+                return resolve({
+                    errCode: 1,
+                    errMessage: 'Invalid date parameter'
+                });
+            }
+
             let month = parseInt(data.month);
             let date = new Date(month);
             // Thời gian bắt đầu của tháng
@@ -411,7 +486,7 @@ let getUserAttendanceByMonth = (data) => {
                     { model: db.Allcode, as: 'positionData', attributes: ['valueV'] },
                 ],
                 raw: true,
-                group: ['User.id'],
+                group: ['User.id', 'genderData.valueV', 'positionData.valueV'], // Updated GROUP BY clause
             });
 
             let lateAttendanceCounts = await db.User.findAll({
@@ -521,6 +596,7 @@ module.exports = {
     createTimeKeepingAndHistory: createTimeKeepingAndHistory,
     getAllAttendanceToday: getAllAttendanceToday,
     getAllHistory: getAllHistory,
+    getUserAttendanceByDay: getUserAttendanceByDay,
     getUserAttendanceByMonth: getUserAttendanceByMonth,
-    getAttendanceByIdAndMonth:getAttendanceByIdAndMonth
+    getAttendanceByIdAndMonth: getAttendanceByIdAndMonth
 }

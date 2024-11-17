@@ -146,6 +146,20 @@ let getAllHistory=async (req,res) =>{
     }
         
 }
+let getUserAttendanceByDay=async (req,res) =>{
+    try{
+        let infor = await userService.getUserAttendanceByDay(req.query);
+        return res.status(200).json(infor)
+    }catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+           message: 'Error from server...'
+       })
+    }
+        
+}
+
 let getUserAttendanceByMonth=async (req,res) =>{
     try{
         let infor = await userService.getUserAttendanceByMonth(req.query);
@@ -159,6 +173,7 @@ let getUserAttendanceByMonth=async (req,res) =>{
     }
         
 }
+
 let getAttendanceByIdAndMonth=async (req,res) =>{
     try{
         let infor = await userService.getAttendanceByIdAndMonth(req.query);
@@ -184,6 +199,7 @@ module.exports={
     createTimeKeepingAndHistory:createTimeKeepingAndHistory,
     deleteAttendance:deleteAttendance,
     getAllHistory:getAllHistory,
+    getUserAttendanceByDay:getUserAttendanceByDay,
     getUserAttendanceByMonth:getUserAttendanceByMonth,
     getAttendanceByIdAndMonth:getAttendanceByIdAndMonth
 }
